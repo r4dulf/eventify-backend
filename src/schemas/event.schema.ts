@@ -9,6 +9,13 @@ export const CreateEventBody = Type.Object({
   imageUrl: Type.Optional(Type.String()),
 });
 
+export const UpdateEventSchema = Type.Object({
+  title: Type.String({ minLength: 1 }),
+  description: Type.Optional(Type.String()),
+  date: Type.String({ format: "date-time" }),
+  location: Type.String(),
+});
+
 export const EventResponse = Type.Object({
   key: Type.String(),
   title: Type.String(),

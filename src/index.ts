@@ -23,19 +23,6 @@ const app = Fastify({
       paths: ["req.headers.authorization", "req.body.password"],
       remove: true,
     },
-
-    serializers: {
-      req: (req) => ({
-        method: req.method,
-        url: req.url,
-        headers: req.headers,
-        body: req.body,
-      }),
-
-      res: (res) => ({
-        statusCode: res.statusCode,
-      }),
-    },
   },
 });
 
