@@ -1,4 +1,5 @@
 import Fastify from "fastify";
+import cors from "@fastify/cors";
 import dotenv from "dotenv";
 
 import swagger from "./plugins/swagger";
@@ -13,9 +14,38 @@ const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 
 dotenv.config();
 
-const app = Fastify();
+const app = Fastify({
+  logger: {
+    msgPrefix: "[Fastify]",
+    level: process.env.NODE_ENV === "production" ? "error" : "info",
+
+    redact: {
+      paths: ["req.headers.authorization", "req.body.password"],
+      remove: true,
+    },
+
+    serializers: {
+      req: (req) => ({
+        method: req.method,
+        url: req.url,
+        headers: req.headers,
+        body: req.body,
+      }),
+
+      res: (res) => ({
+        statusCode: res.statusCode,
+      }),
+    },
+  },
+});
 
 await app.register(swagger);
+
+await app.register(cors, {
+  origin: ["http://127.0.0.1:5173", "http://localhost:5173"],
+  credentials: true,
+});
+
 await app.register(meRoutes);
 await app.register(registrationRoutes);
 await app.register(authRoutes);

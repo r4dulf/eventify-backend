@@ -12,6 +12,7 @@
     "types": "npx openapi-typescript http://localhost:3000/docs/json -o src/types/api.d.ts"
   },
   "dependencies": {
+    "@fastify/cors": "^11.0.1",
     "@fastify/swagger": "^9.5.1",
     "@fastify/swagger-ui": "^5.2.3",
     "@sinclair/typebox": "^0.34.37",

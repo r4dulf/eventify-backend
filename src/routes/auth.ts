@@ -70,14 +70,14 @@ export const authRoutes = async (fastify: FastifyInstance) => {
       schema: {
         tags: ["Auth"],
         body: LoginBody,
-        response: {
-          200: AuthResponse,
-        },
+        response: { 200: AuthResponse },
       },
     },
 
     async (req: FastifyRequest<{ Body: LoginInput }>, reply) => {
       const { email, password } = req.body;
+
+      console.log("Login attempt for email:", email);
 
       const user = await db.query.users.findFirst({
         where: eq(users.email, email),
