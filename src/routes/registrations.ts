@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyRequest } from "fastify";
 import { db } from "../db/client.js";
-import { eq, and } from "drizzle-orm";
+import { eq, and, count, sql, desc } from "drizzle-orm";
 import { events, users, registrations } from "../db/schema.js";
 import {
   RegisterForEventParams,
@@ -98,4 +98,26 @@ export const registrationRoutes = async (fastify: FastifyInstance) => {
       return reply.send(participants);
     }
   );
+
+  fastify.get("/events/popular", async (req, res) => {
+    const limit = Number((req.query as any).limit ?? 5);
+
+    const popularEvents = await db
+      .select({
+        key: events.key,
+        title: events.title,
+        description: events.description,
+        date: events.date,
+        location: events.location,
+        createdByUserId: events.createdByUserId,
+        registrationsCount: count(registrations.id).as("registrationsCount"),
+      })
+      .from(events)
+      .leftJoin(registrations, sql`${events.id} = ${registrations.eventId}`)
+      .groupBy(events.id)
+      .orderBy(desc(sql`registrationsCount`))
+      .limit(limit);
+
+    return res.send(popularEvents);
+  });
 };

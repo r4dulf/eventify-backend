@@ -1,14 +1,18 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ES2022",
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "Bundler", // або 'NodeNext'
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
-    "outDir": "build",
-    "baseUrl": "src"
+    "resolveJsonModule": true,
+    "baseUrl": "./src",
+    "outDir": "./dist"
   },
-  "include": ["src"]
+  "ts-node": {
+    "esm": true,
+    "experimentalSpecifierResolution": "explicit"
+  }
 }

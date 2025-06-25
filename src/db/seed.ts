@@ -1,77 +1,87 @@
-import { db } from "./client.js";
-import { users, events, registrations } from "./schema.js";
-import { hashPassword } from "../utils/hash.js";
 import { randomUUID } from "crypto";
-import { sql } from "drizzle-orm";
+import { events, registrations, users } from "./schema";
+import { faker } from "@faker-js/faker";
+import { db } from "./client";
+import { hashPassword } from "utils/hash";
 
-const run = async () => {
-  await db.run(sql`DELETE FROM registrations`);
-  await db.run(sql`DELETE FROM events`);
-  await db.run(sql`DELETE FROM users`);
+await db.delete(registrations);
+await db.delete(events);
+await db.delete(users);
 
-  const adminPassword = await hashPassword("admin123");
-  const userPassword = await hashPassword("user123");
+const getRandomPlaceholderImage = (text: string) => {
+  const width = faker.number.int({ min: 600, max: 1600 });
+  const height = faker.number.int({ min: 400, max: 900 });
 
-  const createdUsers = await db
-    .insert(users)
-    .values([
-      {
-        name: "Admin",
-        email: "admin@example.com",
-        passwordHash: adminPassword,
-        role: "admin",
-        key: randomUUID(),
-      },
-      {
-        name: "Test User",
-        email: "user@example.com",
-        passwordHash: userPassword,
-        role: "user",
-        key: randomUUID(),
-      },
-    ])
-    .returning({ id: users.id, key: users.key });
-
-  const [admin, testUser] = createdUsers;
-
-  const createdEvents = await db
-    .insert(events)
-    .values([
-      {
-        title: "TypeScript Workshop",
-        description: "Практичний воркшоп",
-        date: new Date().toISOString(),
-        location: "Онлайн",
-        createdByUserId: admin.id,
-        key: randomUUID(),
-      },
-      {
-        title: "Hackathon 2025",
-        description: "24 години командної розробки",
-        date: new Date(Date.now() + 86400000).toISOString(),
-        location: "Київ",
-        createdByUserId: admin.id,
-        key: randomUUID(),
-      },
-    ])
-    .returning({ key: events.key });
-
-  const [event1, event2] = createdEvents;
-
-  console.log("Seed complete");
-  console.log("Test credentials:");
-  console.log(`Admin:    admin@example.com / admin123`);
-  console.log(`User:     user@example.com  / user123`);
-  console.log("");
-  console.log("UUID keys:");
-  console.log(`Admin key:       ${admin.key}`);
-  console.log(`Test User key:   ${testUser.key}`);
-  console.log(`Event #1 key:    ${event1.key}`);
-  console.log(`Event #2 key:    ${event2.key}`);
+  return `https://placehold.co/${width}x${height}/EEE/31343C?text=${encodeURIComponent(
+    text
+  )}`;
 };
 
-run().catch((err) => {
-  console.error("Seed failed:", err);
+const adminPassword = "password123";
+const userPassword = "userpassword";
 
-  process.exit(1);
-});
+const [admin] = await db
+  .insert(users)
+  .values({
+    key: randomUUID(),
+    name: "Admin User",
+    email: "admin@example.com",
+    passwordHash: await hashPassword(adminPassword),
+    role: "admin",
+  })
+  .returning({ id: users.id });
+
+const generatedUsers = await Promise.all(
+  Array.from({ length: 19 }).map(async () => ({
+    key: randomUUID(),
+    name: faker.person.fullName(),
+    email: faker.internet.email(),
+    passwordHash: await hashPassword(userPassword),
+    role: "user",
+  }))
+);
+
+const otherUsers = await db
+  .insert(users)
+  .values(generatedUsers)
+  .returning({ id: users.id, key: users.key });
+
+const allUsers = [admin, ...otherUsers];
+
+const allEvents = await db
+  .insert(events)
+  .values(
+    Array.from({ length: 10 }).map(() => {
+      const creator = faker.helpers.arrayElement(allUsers);
+
+      return {
+        key: randomUUID(),
+        title: faker.lorem.words(3),
+        description: faker.lorem.sentence({ min: 10, max: 100 }),
+        date: faker.date.future().toISOString(),
+        location: faker.location.city(),
+        createdByUserId: creator.id,
+        imageUrl: getRandomPlaceholderImage(faker.lorem.words(3)),
+      };
+    })
+  )
+  .returning({ id: events.id, key: events.key });
+
+for (const event of allEvents) {
+  const participantCount = faker.number.int({ min: 2, max: 8 });
+  const participants = faker.helpers.arrayElements(
+    otherUsers,
+    participantCount
+  );
+
+  await db.insert(registrations).values(
+    Array.from({ length: 30 }).map(() => ({
+      key: randomUUID(),
+      eventId: faker.helpers.arrayElement(allEvents).id,
+      userId: faker.helpers.arrayElement(allUsers).id,
+      registeredAt: faker.date.recent().toISOString(),
+    }))
+  );
+}
+
+console.log("✅ Seed complete with 1 admin, 19 users, 10 events");
