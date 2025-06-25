@@ -24,6 +24,7 @@ export const events = sqliteTable("events", {
   description: text("description"),
   date: text("date").notNull(), // ISO string
   location: text("location").notNull(),
+  imageUrl: text("image_url"),
 
   createdByUserId: integer("created_by_user_id")
     .notNull()

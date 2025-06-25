@@ -5,6 +5,9 @@ import { eq, like } from "drizzle-orm";
 import { Type, Static } from "@sinclair/typebox";
 import { CreateEventBody, EventResponse } from "../schemas/event.schema.js";
 import { randomUUID } from "crypto";
+import multipart from "@fastify/multipart";
+import pump from "pump";
+import fs from "fs";
 
 type CreateEventInput = Static<typeof CreateEventBody>;
 type SearchQuery = { search?: string };
@@ -99,4 +102,31 @@ export const eventRoutes = async (fastify: FastifyInstance) => {
       return reply.send(event);
     }
   );
+
+  await fastify.register(multipart);
+
+  fastify.post<{ Params: { key: string } }>("/events/:key/image", {
+    preHandler: fastify.authenticate,
+    handler: async (req, reply) => {
+      const file = await req.file();
+      const { key } = req.params;
+
+      if (!file || !file.filename) {
+        return reply.status(400).send({ message: "No file uploaded" });
+      }
+
+      const ext = file.filename.split(".").pop();
+      const filename = `${key}.${ext}`;
+      const filepath = `public/uploads/${filename}`;
+
+      await pump(file.file, fs.createWriteStream(filepath));
+
+      await db
+        .update(events)
+        .set({ imageUrl: `/uploads/${filename}` })
+        .where(eq(events.key, key));
+
+      return reply.send({ success: true, url: `/uploads/${filename}` });
+    },
+  });
 };

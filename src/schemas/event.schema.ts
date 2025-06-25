@@ -6,6 +6,7 @@ export const CreateEventBody = Type.Object({
   description: Type.Optional(Type.String()),
   date: Type.String({ format: "date-time" }),
   location: Type.String({ minLength: 1 }),
+  imageUrl: Type.Optional(Type.String()),
 });
 
 export const EventResponse = Type.Object({
@@ -15,4 +16,5 @@ export const EventResponse = Type.Object({
   date: Type.String(),
   location: Type.String(),
   createdByUserId: Type.Number(),
+  imageUrl: Type.Optional(Type.String()),
 });
