@@ -1,0 +1,18 @@
+import { Type } from "@sinclair/typebox";
+
+export const CreateEventBody = Type.Object({
+  key: Type.Optional(Type.String()),
+  title: Type.String({ minLength: 1 }),
+  description: Type.Optional(Type.String()),
+  date: Type.String({ format: "date-time" }),
+  location: Type.String({ minLength: 1 }),
+});
+
+export const EventResponse = Type.Object({
+  key: Type.String(),
+  title: Type.String(),
+  description: Type.Optional(Type.String()),
+  date: Type.String(),
+  location: Type.String(),
+  createdByUserId: Type.Number(),
+});
