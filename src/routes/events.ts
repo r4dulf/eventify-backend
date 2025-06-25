@@ -1,9 +1,13 @@
 import { FastifyInstance, FastifyRequest } from "fastify";
 import { db } from "../db/client.js";
-import { events } from "../db/schema.js";
+import { events, registrations } from "../db/schema.js";
 import { eq, like } from "drizzle-orm";
 import { Type, Static } from "@sinclair/typebox";
-import { CreateEventBody, EventResponse } from "../schemas/event.schema.js";
+import {
+  CreateEventBody,
+  EventResponse,
+  UpdateEventSchema,
+} from "../schemas/event.schema.js";
 import { randomUUID } from "crypto";
 import multipart from "@fastify/multipart";
 import pump from "pump";
@@ -11,6 +15,16 @@ import fs from "fs";
 
 type CreateEventInput = Static<typeof CreateEventBody>;
 type SearchQuery = { search?: string };
+
+type UpdateEventInput = {
+  Params: { key: string };
+  Body: {
+    title?: string;
+    description?: string;
+    date?: string;
+    location?: string;
+  };
+};
 
 export const eventRoutes = async (fastify: FastifyInstance) => {
   fastify.post(
@@ -135,4 +149,89 @@ export const eventRoutes = async (fastify: FastifyInstance) => {
       return reply.send({ success: true, url: `/uploads/${filename}` });
     },
   });
+
+  fastify.put(
+    "/events/:key",
+    {
+      schema: {
+        tags: ["Events"],
+        params: Type.Object({
+          key: Type.String(),
+        }),
+        body: UpdateEventSchema,
+        response: {
+          200: EventResponse,
+        },
+      },
+    },
+
+    async (req: FastifyRequest<UpdateEventInput>, reply) => {
+      if (!req.user) return reply.status(401).send({ message: "Unauthorized" });
+
+      const { key } = req.params;
+      const event = await db.query.events.findFirst({
+        where: eq(events.key, key),
+      });
+
+      if (!event) return reply.status(404).send({ message: "Event not found" });
+
+      const isOwner = event.createdByUserId === req.user.id;
+      const isAdmin = req.user.role === "admin";
+      if (!isOwner && !isAdmin) {
+        return reply.status(403).send({ message: "Forbidden" });
+      }
+
+      await db
+        .update(events)
+        .set({
+          title: req.body.title ?? event.title,
+          description: req.body.description ?? event.description,
+          date: req.body.date ?? event.date,
+          location: req.body.location ?? event.location,
+        })
+        .where(eq(events.key, key));
+
+      const updated = await db.query.events.findFirst({
+        where: eq(events.key, key),
+      });
+
+      return reply.send(updated!);
+    }
+  );
+
+  fastify.delete(
+    "/events/:key",
+    {
+      schema: {
+        tags: ["Events"],
+        params: Type.Object({
+          key: Type.String(),
+        }),
+        response: {
+          200: Type.Object({ success: Type.Boolean() }),
+        },
+      },
+    },
+    async (req: FastifyRequest<{ Params: { key: string } }>, reply) => {
+      if (!req.user) return reply.status(401).send({ message: "Unauthorized" });
+
+      const { key } = req.params;
+      const event = await db.query.events.findFirst({
+        where: eq(events.key, key),
+      });
+
+      if (!event) return reply.status(404).send({ message: "Event not found" });
+
+      const isOwner = event.createdByUserId === req.user.id;
+      const isAdmin = req.user.role === "admin";
+      if (!isOwner && !isAdmin) {
+        return reply.status(403).send({ message: "Forbidden" });
+      }
+
+      await db.delete(registrations).where(eq(registrations.eventId, event.id));
+      await db.delete(events).where(eq(events.key, key));
+
+      return reply.send({ success: true });
+    }
+  );
 };
