@@ -106,6 +106,9 @@ export const eventRoutes = async (fastify: FastifyInstance) => {
   await fastify.register(multipart);
 
   fastify.post<{ Params: { key: string } }>("/events/:key/image", {
+    schema: {
+      tags: ["Events"],
+    },
     handler: async (req, reply) => {
       if (!req.user) {
         return reply.status(401).send({ message: "Unauthorized" });
