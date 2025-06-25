@@ -27,5 +27,8 @@ migrations/
 .DS_Store
 Thumbs.db
 
+# Auto-generated types
+src/types/*.d.ts
+
 # Optional: local testing data
 *.local.json

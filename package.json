@@ -8,7 +8,8 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "seed": "NODE_OPTIONS=\"--loader ts-node/esm\" ts-node src/db/seed.ts",
-    "drizzle:push": "drizzle-kit push"
+    "drizzle:push": "drizzle-kit push",
+    "types": "npx openapi-typescript http://localhost:3000/docs/json -o src/types/api.d.ts"
   },
   "dependencies": {
     "@fastify/swagger": "^9.5.1",
@@ -27,6 +28,7 @@
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
     "drizzle-kit": "^0.31.2",
+    "openapi-typescript": "^7.8.0",
     "ts-node": "^10.9.2",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3"

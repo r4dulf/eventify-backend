@@ -29,6 +29,9 @@ npm run seed
 
 # 4. Запустити сервер
 npm run dev
+
+# 5. Згенерувати типи
+npm run types
 ```
 
 > База зберігається у файлі `eventify.sqlite`
@@ -42,7 +45,7 @@ admin@example.com / admin123
 user@example.com  / user123
 ```
 
-JWT видається через `/auth/login`  
+JWT видається через `/auth/login`
 
 ---
 
