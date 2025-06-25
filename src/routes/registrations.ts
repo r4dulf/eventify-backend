@@ -17,12 +17,8 @@ export const registrationRoutes = async (fastify: FastifyInstance) => {
       schema: {
         tags: ["Registrations"],
         params: RegisterForEventParams,
-        body: Type.Object({
-          key: Type.Optional(Type.String()),
-        }),
-        response: {
-          200: RegistrationResponse,
-        },
+        body: Type.Object({ key: Type.Optional(Type.String()) }),
+        response: { 200: RegistrationResponse },
       },
     },
     async (

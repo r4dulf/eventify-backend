@@ -13,26 +13,15 @@ declare module "fastify" {
   }
 }
 
-declare module "fastify" {
-  interface FastifyInstance {
-    authenticate: (
-      request: FastifyRequest,
-      reply: FastifyReply
-    ) => Promise<void>;
-  }
-}
-
 const authPlugin = fp(async (fastify) => {
   fastify.decorateRequest("user");
 
-  fastify.decorate(
-    "authenticate",
+  fastify.addHook(
+    "onRequest",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const authHeader = request.headers.authorization;
 
-      if (!authHeader?.startsWith("Bearer ")) {
-        return reply.status(401).send({ message: "Missing token" });
-      }
+      if (!authHeader?.startsWith("Bearer ")) return;
 
       const token = authHeader.slice(7);
 

@@ -106,8 +106,11 @@ export const eventRoutes = async (fastify: FastifyInstance) => {
   await fastify.register(multipart);
 
   fastify.post<{ Params: { key: string } }>("/events/:key/image", {
-    preHandler: fastify.authenticate,
     handler: async (req, reply) => {
+      if (!req.user) {
+        return reply.status(401).send({ message: "Unauthorized" });
+      }
+
       const file = await req.file();
       const { key } = req.params;
 
