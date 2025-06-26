@@ -111,6 +111,7 @@ export const registrationRoutes = async (fastify: FastifyInstance) => {
         location: events.location,
         createdByUserId: events.createdByUserId,
         registrationsCount: count(registrations.id).as("registrationsCount"),
+        imageUrl: events.imageUrl,
       })
       .from(events)
       .leftJoin(registrations, sql`${events.id} = ${registrations.eventId}`)

@@ -8,13 +8,11 @@ await db.delete(registrations);
 await db.delete(events);
 await db.delete(users);
 
-const getRandomPlaceholderImage = (text: string) => {
+const getRandomPlaceholderImage = () => {
   const width = faker.number.int({ min: 600, max: 1600 });
   const height = faker.number.int({ min: 400, max: 900 });
 
-  return `https://placehold.co/${width}x${height}/EEE/31343C?text=${encodeURIComponent(
-    text
-  )}`;
+  return `https://picsum.photos/${width}/${height}`;
 };
 
 const adminPassword = "password123";
@@ -61,7 +59,7 @@ const allEvents = await db
         date: faker.date.future().toISOString(),
         location: faker.location.city(),
         createdByUserId: creator.id,
-        imageUrl: getRandomPlaceholderImage(faker.lorem.words(3)),
+        imageUrl: getRandomPlaceholderImage(),
       };
     })
   )
