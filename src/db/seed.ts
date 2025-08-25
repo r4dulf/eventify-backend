@@ -49,13 +49,13 @@ const allUsers = [admin, ...otherUsers];
 const allEvents = await db
   .insert(events)
   .values(
-    Array.from({ length: 10 }).map(() => {
+    Array.from({ length: faker.number.int({ min: 20, max: 30 }) }).map(() => {
       const creator = faker.helpers.arrayElement(allUsers);
 
       return {
         key: randomUUID(),
         title: faker.lorem.words(3),
-        description: faker.lorem.sentence({ min: 10, max: 100 }),
+        description: faker.lorem.sentence({ min: 50, max: 100 }),
         date: faker.date.future().toISOString(),
         location: faker.location.city(),
         createdByUserId: creator.id,
@@ -66,17 +66,21 @@ const allEvents = await db
   .returning({ id: events.id, key: events.key });
 
 for (const event of allEvents) {
-  const participantCount = faker.number.int({ min: 2, max: 8 });
+  const participantCount = faker.number.int({
+    min: 2,
+    max: otherUsers.length - 1,
+  });
+
   const participants = faker.helpers.arrayElements(
     otherUsers,
     participantCount
   );
 
   await db.insert(registrations).values(
-    Array.from({ length: 30 }).map(() => ({
+    participants.map((participant) => ({
       key: randomUUID(),
-      eventId: faker.helpers.arrayElement(allEvents).id,
-      userId: faker.helpers.arrayElement(allUsers).id,
+      eventId: event.id,
+      userId: participant.id,
       registeredAt: faker.date.recent().toISOString(),
     }))
   );
