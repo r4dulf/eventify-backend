@@ -32,3 +32,6 @@ src/types/*.d.ts
 
 # Optional: local testing data
 *.local.json
+
+# Test users
+test-users.json

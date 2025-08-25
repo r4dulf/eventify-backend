@@ -3,6 +3,7 @@ import { events, registrations, users } from "./schema";
 import { faker } from "@faker-js/faker";
 import { db } from "./client";
 import { hashPassword } from "utils/hash";
+import fs from "fs";
 
 await db.delete(registrations);
 await db.delete(events);
@@ -15,6 +16,7 @@ const getRandomPlaceholderImage = () => {
   return `https://picsum.photos/${width}/${height}`;
 };
 
+const adminEmail = "admin@example.com";
 const adminPassword = "password123";
 const userPassword = "userpassword";
 
@@ -23,7 +25,7 @@ const [admin] = await db
   .values({
     key: randomUUID(),
     name: "Admin User",
-    email: "admin@example.com",
+    email: adminEmail,
     passwordHash: await hashPassword(adminPassword),
     role: "admin",
   })
@@ -42,7 +44,7 @@ const generatedUsers = await Promise.all(
 const otherUsers = await db
   .insert(users)
   .values(generatedUsers)
-  .returning({ id: users.id, key: users.key });
+  .returning({ id: users.id, key: users.key, email: users.email });
 
 const allUsers = [admin, ...otherUsers];
 
@@ -85,5 +87,21 @@ for (const event of allEvents) {
     }))
   );
 }
+
+await fs.promises.writeFile(
+  "test-users.json",
+  JSON.stringify(
+    [
+      { email: adminEmail, password: adminPassword, role: "admin" },
+      ...otherUsers.map((u) => ({
+        email: u.email,
+        password: userPassword,
+        role: "user",
+      })),
+    ],
+    null,
+    2
+  )
+);
 
 console.log("✅ Seed complete with 1 admin, 19 users, 10 events");
