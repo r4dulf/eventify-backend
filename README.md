@@ -41,8 +41,8 @@ npm run types
 ## 🧪 Тестові користувачі
 
 ```txt
-admin@example.com / admin123
-user@example.com  / user123
+admin@example.com / password123
+user@example.com  / userpassword
 ```
 
 JWT видається через `/auth/login`
