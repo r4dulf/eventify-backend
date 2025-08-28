@@ -1,58 +1,69 @@
 # 🎫 Eventify API
 
-Eventify — це REST API для керування подіями та реєстрацією користувачів.  
-Реалізовано на стеку Fastify + Drizzle ORM + SQLite.
+Eventify is a REST API for managing events and user registration.  
+Implemented with the stack Fastify + Drizzle ORM + SQLite.
 
 ---
 
-## ⚙️ Стек
+## ⚙️ Stack
 
-- **Fastify** — високошвидкісний веб-фреймворк
-- **Drizzle ORM** — типобезпечний ORM з підтримкою SQLite
-- **TypeBox** — типізація схем і автогенерація Swagger
-- **SQLite** — файлова база даних
-- **JWT** — авторизація токенами
+- **Fastify** — high-performance web framework
+- **Drizzle ORM** — type-safe ORM with SQLite support
+- **TypeBox** — schema typing and Swagger auto-generation
+- **SQLite** — file-based database
+- **JWT** — token-based authorization
 
 ---
 
-## 🚀 Запуск проєкту
+## 🛠 Environment Setup (.env)
+
+You need to create a `.env` file in the project root with the following parameters:
+
+```env
+JWT_SECRET="your_jwt_secret"
+PORT=3000
+```
+
+---
+
+## 🚀 Project Launch
 
 ```bash
-# 1. Встановити залежності
+# 1. Install dependencies
 npm install
 
-# 2. Створити базу (або оновити схему)
+# 2. Create database (or update schema)
 npm run drizzle:push
 
-# 3. Засіяти тестовими даними
+# 3. Seed with test data
 npm run seed
 
-# 4. Запустити сервер
+# 4. Start server
 npm run dev
 
-# 5. Згенерувати типи
+# 5. Generate types
 npm run types
 ```
 
-> База зберігається у файлі `eventify.sqlite`
+> The database is stored in the file `eventify.sqlite`
 
 ---
 
-## 🧪 Тестові користувачі
+## 🧪 Test Users
 
-Усі тестові користувачі зберігаються у файлі `test-users.json`, який створюється після запуску `npm run seed`.
+All test users are stored in the `test-users.json` file, which is created after running `npm run seed`.
 
 ---
 
-## 📄 API документація
+## 📄 API Documentation
 
-Swagger доступний на:
+Swagger is available at:
 
 ```
 GET /docs
 ```
 
-Описує всі маршрути з типами, параметрами, прикладами відповідей.
+It describes all routes with types, parameters, and example responses.
 
 ---
 
